@@ -142,7 +142,51 @@ INNER JOIN b6 ON constructors.constructorid=b6.constructorid;
 
 
 --7--
+WITH A7 AS (
+    SELECT driverid,year,SUM(points)
+    FROM results,races
+    WHERE results.raceid=races.raceid
+    GROUP BY driverid,year 
+),
+B7 AS (
+    SELECT year,MAX(A7.sum)
+    FROM A7
+    GROUP BY year
+),
+C7 AS (
+    SELECT driverid,sum
+    FROM A7,B7
+    WHERE sum=max
+    AND A7.year=B7.year
 
+),
+D7 AS (
+    SELECT DISTINCT driverid
+    FROM C7
+),
+E7 AS (
+    SELECT driverid,SUM(points)
+    FROM results
+    GROUP BY driverid
+),
+F7 AS (
+    SELECT E7.driverid,E7.sum
+    FROM E7,D7
+    WHERE D7.driverid = E7.driverid
+),
+G7 AS (
+    SELECT driverid,sum
+    FROM E7
+    EXCEPT
+    SELECT driverid,sum
+    FROM F7
+    ORDER BY sum DESC
+    LIMIT 3
+)
+SELECT G7.driverid,forename,surname,sum AS points
+FROM G7,drivers
+WHERE G7.driverid = drivers.driverid
+ORDER BY points DESC, forename, surname, G7.driverid
 
 --8--
 WITH a8 AS (
