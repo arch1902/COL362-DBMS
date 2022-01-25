@@ -1,0 +1,115 @@
+ driverid | forename | surname | nationality |  time  
+----------+----------+---------+-------------+--------
+       13 | Felipe   | Massa   | Brazilian   | 124569
+(1 row)
+
+ constructor_name | constructorid | nationality | points 
+------------------+---------------+-------------+--------
+ Red Bull         |             9 | Austrian    |  46000
+ Ferrari          |             6 | Italian     |  40000
+ McLaren          |             1 | British     |  37800
+ Lotus F1         |           208 | British     |  30300
+ Mercedes         |           131 | German      |  14200
+(5 rows)
+
+ driverid | forename | surname  | points 
+----------+----------+----------+--------
+        1 | Lewis    | Hamilton | 377800
+(1 row)
+
+ constructorid |   name   | nationality | points 
+---------------+----------+-------------+--------
+           131 | Mercedes | German      | 568500
+(1 row)
+
+ driverid | forename | surname  | race_wins 
+----------+----------+----------+-----------
+        1 | Lewis    | Hamilton |       103
+(1 row)
+
+ constructorid |  name   | num_wins 
+---------------+---------+----------
+             6 | Ferrari |      230
+(1 row)
+
+ driverid | forename |  surname  | points 
+----------+----------+-----------+--------
+      822 | Valtteri | Bottas    | 173800
+      817 | Daniel   | Ricciardo | 127400
+       13 | Felipe   | Massa     | 116700
+(3 rows)
+
+ driverid | forename | surname  | num_countries 
+----------+----------+----------+---------------
+        1 | Lewis    | Hamilton |            26
+(1 row)
+
+ driverid | forename  |  surname   | num_wins 
+----------+-----------+------------+----------
+        1 | Lewis     | Hamilton   |       61
+       30 | Michael   | Schumacher |       40
+       20 | Sebastian | Vettel     |       31
+(3 rows)
+
+ raceid | num_stops | driverid | forename | surname | circuitid |           name            
+--------+-----------+----------+----------+---------+-----------+---------------------------
+    847 |         6 |       18 | Jenson   | Button  |         7 | Circuit Gilles Villeneuve
+(1 row)
+
+ raceid |      name      |  location  | num_collisions 
+--------+----------------+------------+----------------
+    265 | Hockenheimring | Hockenheim |             10
+(1 row)
+
+ driverid | forename | surname  | count 
+----------+----------+----------+-------
+        1 | Lewis    | Hamilton |    32
+(1 row)
+
+ year | point_diff | constructor1_id | constructor1_name | constructor2_id | constructor2_name 
+------+------------+-----------------+-------------------+-----------------+-------------------
+ 2016 |      29700 |             131 | Mercedes          |               9 | Red Bull
+(1 row)
+
+ driverid | forename | surname  | circuitid | country | pos 
+----------+----------+----------+-----------+---------+-----
+        1 | Lewis    | Hamilton |        10 | Germany |  14
+(1 row)
+
+ constructorid |  name   | num 
+---------------+---------+-----
+             1 | McLaren |  35
+(1 row)
+
+ driverid | forename | surname  
+----------+----------+----------
+      657 | Bill     | Vukovich
+      628 | Bob      | Sweikert
+      509 | Jim      | Rathmann
+      525 | Jimmy    | Bryan
+      593 | Johnnie  | Parsons
+(5 rows)
+
+ constructorid |   name   | count 
+---------------+----------+-------
+           131 | Mercedes |    53
+(1 row)
+
+ driverid | forename | surname  | num_laps 
+----------+----------+----------+----------
+        1 | Lewis    | Hamilton |     5397
+(1 row)
+
+ driverid | forename | surname  | count 
+----------+----------+----------+-------
+        1 | Lewis    | Hamilton |   182
+(1 row)
+
+ driverid | forename  |  surname   | num_champs 
+----------+-----------+------------+------------
+        1 | Lewis     | Hamilton   |          7
+       30 | Michael   | Schumacher |          7
+      117 | Alain     | Prost      |          5
+      579 | Juan      | Fangio     |          5
+       20 | Sebastian | Vettel     |          4
+(5 rows)
