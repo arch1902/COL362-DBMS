@@ -1,0 +1,10 @@
+\copy circuits from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/circuits.csv' DELIMITER ',' CSV HEADER;
+\copy constructorresults from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/constructor_results.csv' DELIMITER ',' CSV HEADER;
+\copy constructors from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/constructors.csv' DELIMITER ',' CSV HEADER;
+\copy drivers from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/drivers.csv' DELIMITER ',' CSV HEADER;
+\copy laptimes from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/lap_times.csv' DELIMITER ',' CSV HEADER;
+\copy pitstops from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/pit_stops.csv' DELIMITER ',' CSV HEADER;
+\copy qualifying from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/qualifying.csv' DELIMITER ',' CSV HEADER;
+\copy races from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/races.csv' DELIMITER ',' CSV HEADER;
+\copy results from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/results.csv' DELIMITER ',' CSV HEADER;
+\copy status from '/home/arpitchauhan/Desktop/Sem6/COL362_DBMS/Assignments/A1/Assignment1_Design/status.csv' DELIMITER ',' CSV HEADER;
