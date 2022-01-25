@@ -30,6 +30,7 @@ FROM drivers,e
 WHERE e.driverid = drivers.driverid
 ORDER BY drivers.forename, drivers.surname, drivers.nationality;
 
+
 --2--
 WITH a2 AS (
     SELECT raceid
@@ -62,6 +63,7 @@ SELECT *
 FROM e2
 LIMIT 5;
 
+
 --3--
 WITH a3 AS (
     SELECT raceid
@@ -77,12 +79,21 @@ c3 AS (
     SELECT driverid,SUM(points)
     FROM b3
     GROUP BY driverid
-    ORDER BY SUM(points) DESC
-    LIMIT 1
+),
+d3 AS (
+    SELECT MAX(sum)
+    FROM c3
+),
+e3 AS (
+    SELECT driverid,sum
+    FROM c3,d3
+    WHERE max=sum
 )
-SELECT DISTINCT drivers.driverid,drivers.forename,drivers.surname,c3.sum AS points
-FROM c3
-INNER JOIN drivers ON drivers.driverid = c3.driverid;
+SELECT DISTINCT drivers.driverid,drivers.forename,drivers.surname,e3.sum AS points
+FROM e3
+INNER JOIN drivers ON drivers.driverid = e3.driverid
+ORDER BY drivers.forename,drivers.surname,drivers.driverid;
+
 
 --4--
 WITH a4 AS (
@@ -99,12 +110,21 @@ c4 AS (
     SELECT constructorid,SUM(points)
     FROM b4
     GROUP BY constructorid
-    ORDER BY SUM(points) DESC
-    LIMIT 1
+),
+d4 AS (
+    SELECT MAX(sum)
+    FROM c4
+),
+e4 AS (
+    SELECT constructorid,sum
+    FROM c4,d4
+    WHERE max = sum
 )
-SELECT DISTINCT constructors.constructorid,constructors.name,constructors.nationality,c4.sum AS points
-FROM c4
-INNER JOIN constructors ON constructors.constructorid = c4.constructorid;
+SELECT DISTINCT constructors.constructorid,constructors.name,constructors.nationality,e4.sum AS points
+FROM e4
+INNER JOIN constructors ON constructors.constructorid = e4.constructorid
+ORDER BY constructors.name,constructors.nationality,constructors.constructorid;
+
 
 --5--
 WITH a5 AS (
@@ -116,29 +136,58 @@ b5 AS (
     SELECT driverid,SUM(positionOrder)
     FROM a5
     GROUP BY driverid
-    ORDER BY SUM(positionOrder) DESC
-    LIMIT 1
+),
+c5 AS (
+    SELECT MAX(sum)
+    FROM b5
+),
+d5 AS (
+    SELECT driverid,sum
+    FROM b5,c5
+    WHERE sum = max
 )
-SELECT drivers.driverid,forename,surname,b5.sum as race_wins
+SELECT drivers.driverid,forename,surname,d5.sum as race_wins
 FROM drivers
-INNER JOIN b5 ON drivers.driverid=b5.driverid;
+INNER JOIN d5 ON drivers.driverid=d5.driverid
+ORDER BY forename,surname,drivers.driverid;
+
 
 --6--
 WITH a6 AS (
-    SELECT constructorid, raceid, positionOrder
-    FROM results
-    WHERE positionOrder=1
+    SELECT DISTINCT constructorid, raceid, SUM(points)
+    FROM constructorresults
+    GROUP BY constructorid,raceid
+),
+y6 AS (
+    SELECT DISTINCT raceid,MAX(sum)
+    FROM a6
+    GROUP BY raceid
+),
+x6 AS (
+    SELECT DISTINCT constructorid, a6.raceid, sum
+    FROM a6,y6
+    WHERE max = sum
+    AND a6.raceid = y6.raceid
 ),
 b6 AS (
-    SELECT constructorid,SUM(positionOrder)
-    FROM a6
+    SELECT constructorid,COUNT(raceid)
+    FROM x6
     GROUP BY constructorid
-    ORDER BY SUM(positionOrder) DESC
-    LIMIT 1
+),
+c6 AS (
+    SELECT MAX(count)
+    FROM b6
+),
+d6 AS (
+    SELECT constructorid, count
+    FROM b6,c6
+    WHERE count = max
 )
-SELECT constructors.constructorid,name,b6.sum as num_wins
+SELECT constructors.constructorid,name,d6.count as num_wins
 FROM constructors
-INNER JOIN b6 ON constructors.constructorid=b6.constructorid;
+INNER JOIN d6 ON constructors.constructorid=d6.constructorid
+ORDER BY name,constructors.constructorid;
+
 
 --7--
 WITH A7 AS (
@@ -185,7 +234,8 @@ G7 AS (
 SELECT G7.driverid,forename,surname,sum AS points
 FROM G7,drivers
 WHERE G7.driverid = drivers.driverid
-ORDER BY points DESC, forename, surname, G7.driverid
+ORDER BY points DESC, forename, surname, G7.driverid;
+
 
 --8--
 WITH a8 AS (
@@ -207,28 +257,36 @@ d8 AS (
     SELECT driverid,COUNT(driverid)
     FROM c8
     GROUP BY driverid
-    ORDER BY COUNT(driverid) DESC
-    LIMIT 1
+),
+e8 AS (
+    SELECT MAX(count)
+    FROM d8
+),
+f8 AS (
+    SELECT driverid,count
+    FROM d8,e8
+    WHERE count=max
 )
-SELECT d8.driverid,forename,surname,d8.count as num_countries 
-FROM d8
-INNER JOIN drivers ON drivers.driverid=d8.driverid;
+SELECT f8.driverid,forename,surname,f8.count as num_countries 
+FROM f8
+INNER JOIN drivers ON drivers.driverid=f8.driverid
+ORDER BY forename,surname,f8.driverid;
+
 
 --9--
 WITH A9 AS (
-    SELECT results.driverid,results.raceid,position,positionOrder
-    FROM qualifying, results
-    WHERE position=1
-    and results.driverid=qualifying.driverid
+    SELECT results.driverid,results.raceid,positionOrder
+    FROM results
+    WHERE grid=1
     and positionOrder=1
-    and results.raceid = qualifying.raceid
 )
-SELECT A9.driverid,forename,surname,COUNT(A9.driverid) as num_wins
+SELECT A9.driverid,forename,surname,COUNT(raceid) as num_wins
 FROM A9, drivers
 WHERE A9.driverid = drivers.driverid
 GROUP BY A9.driverid,forename,surname
-ORDER BY COUNT(raceid) DESC
+ORDER BY COUNT(raceid) DESC, forename, surname, A9.driverid
 LIMIT 3;
+
 
 --10--
 WITH A10 AS (
@@ -245,16 +303,21 @@ B10 AS (
     AND A10.raceid = races.raceid
     AND races.circuitid = circuits.circuitid
     GROUP BY A10.raceid,A10.driverid,forename,surname,races.circuitid,circuits.name
-    ORDER BY num_stops DESC
+),
+X10 AS (
+    SELECT MAX(num_stops)
+    FROM B10
 ),
 C10 AS (
-    SELECT * 
-    FROM B10 
-    LIMIT 1
+    SELECT raceid,num_stops,driverid ,forename,surname,circuitid,name
+    FROM B10,X10 
+    WHERE num_stops=max
 )
 SELECT B10.raceid,B10.num_stops,B10.driverid ,B10.forename,B10.surname,B10.circuitid,B10.name
 FROM B10
-INNER JOIN C10 ON B10.num_stops = C10.num_stops;
+INNER JOIN C10 ON B10.num_stops = C10.num_stops
+ORDER BY B10.forename,B10.surname,B10.name,B10.circuitid,B10.driverid;
+
 
 --11--
 WITH a11 AS (
@@ -267,12 +330,19 @@ b11 AS (
     FROM results
     INNER JOIN a11 ON results.statusid=a11.statusid
 ),
-c11 AS (
+x11 AS (
     SELECT raceid,COUNT(raceid)
     FROM b11
     GROUP BY raceid
-    ORDER BY COUNT(raceid) DESC
-    LIMIT 1
+),
+y11 AS (
+    SELECT MAX(count)
+    FROM x11
+),
+c11 AS (
+    SELECT raceid,count
+    FROM x11,y11
+    WHERE max=count
 ),
 d11 AS (
     SELECT raceid,location,circuits.name
@@ -282,7 +352,9 @@ d11 AS (
 
 SELECT d11.raceid, name, location, c11.count AS num_collisions
 FROM d11
-INNER JOIN c11 ON d11.raceid=c11.raceid;
+INNER JOIN c11 ON d11.raceid=c11.raceid
+ORDER BY name,location,d11.raceid;
+
 
 --12--
 WITH a12 AS (
@@ -295,13 +367,21 @@ b12 AS (
     FROM a12
     GROUP BY driverid
     ORDER BY COUNT(driverid) DESC
+),
+c12 AS (
+    SELECT b12.driverid, forename, surname, count
+    FROM b12
+    INNER JOIN drivers ON drivers.driverid=b12.driverid
+),
+d12 AS (
+    SELECT max(count)
+    FROM c12
 )
+SELECT driverid, forename, surname, count
+FROM c12,d12
+WHERE count = max
+ORDER BY forename,surname,driverid;
 
-SELECT b12.driverid, forename, surname, count
-FROM b12
-INNER JOIN drivers ON drivers.driverid=b12.driverid
-ORDER BY count DESC
-LIMIT 1;
 
 --13--
 WITH A13 AS (
@@ -315,12 +395,12 @@ B13 AS (
     SELECT year,MAX(A13.score) as score
     FROM A13
     GROUP BY year
-    ORDER BY year 
+    ORDER BY year
 ),
 C13 AS (
     SELECT DISTINCT A13.constructorid,name as constructor1_name,B13.year,B13.score
     FROM A13,B13,constructors
-    WHERE A13.score=B13.score 
+    WHERE A13.score=B13.score
     AND A13.year=B13.year
     AND constructors.constructorid = A13.constructorid
     ORDER BY year
@@ -337,50 +417,68 @@ E13 AS (
     SELECT year,MAX(D13.score) as score
     FROM D13
     GROUP BY year
-    ORDER BY year     
+    ORDER BY year
 ),
 F13 AS (
     SELECT DISTINCT D13.constructorid,name as constructor2_name,D13.year,D13.score
     FROM D13,E13,constructors
-    WHERE D13.score=E13.score 
+    WHERE D13.score=E13.score
     AND constructors.constructorid = D13.constructorid
     AND D13.year=E13.year
     ORDER BY year
+),
+G13  AS (
+    SELECT C13.year,(C13.score-F13.score) as point_diff,C13.constructorid as constructor1_id,constructor1_name,F13.constructorid as constructor2_id,constructor2_name
+    FROM C13,F13
+    WHERE C13.year = F13.year
+    ORDER BY point_diff DESC
+),
+H13 AS (
+    SELECT max(point_diff)
+    FROM G13
 )
-SELECT C13.year,(C13.score-F13.score) as points_diff,C13.constructorid as constructor1_id,constructor1_name,F13.constructorid as constructor2_id,constructor2_name
-FROM C13,F13
-WHERE C13.year = F13.year
-ORDER BY points_diff DESC 
-LIMIT 1;
+SELECT year,point_diff,constructor1_id,constructor1_name,constructor2_id,constructor2_name
+FROM G13,H13
+WHERE point_diff=max
+ORDER BY constructor1_name,constructor2_name,constructor1_id,constructor2_id;
+
 
 --14--
 WITH a14 AS (
-    SELECT raceid,circuitid
-    FROM races
-    WHERE year=2018
+SELECT raceid,circuitid
+FROM races
+WHERE year=2018
 ),
 b14 AS (
-    SELECT driverid,A14.raceid,grid
-    FROM results
-    INNER JOIN a14 ON results.raceid = a14.raceid
-    WHERE positionOrder=1
+SELECT driverid,A14.raceid,grid
+FROM results
+INNER JOIN a14 ON results.raceid = a14.raceid
+WHERE positionOrder=1
 ),
 c14 AS (
-    SELECT raceid,a14.circuitid,country
-    FROM a14
-    INNER JOIN circuits ON a14.circuitid=circuits.circuitid
+SELECT raceid,a14.circuitid,country
+FROM a14
+INNER JOIN circuits ON a14.circuitid=circuits.circuitid
 ),
 d14 AS (
-    SELECT driverid,circuitid,country,grid
-    FROM c14
-    INNER JOIN b14 ON b14.raceid=c14.raceid
+SELECT driverid,circuitid,country,grid
+FROM c14
+INNER JOIN b14 ON b14.raceid=c14.raceid
+),
+e14 AS (
+    SELECT d14.driverid, forename, surname,circuitid,country,grid as pos
+    FROM d14
+    INNER JOIN drivers ON drivers.driverid=d14.driverid
+),
+f14 AS (
+    SELECT MAX(pos) 
+    FROM e14
 )
+SELECT driverid, forename, surname,circuitid,country,pos
+FROM e14,f14
+WHERE max = pos
+ORDER BY forename DESC, surname,country,driverid,circuitid;
 
-SELECT d14.driverid, forename, surname,circuitid,country,grid as pos
-FROM d14
-INNER JOIN drivers ON drivers.driverid=d14.driverid
-ORDER BY grid DESC
-LIMIT 1;
 
 --15--
 WITH a15 AS (
@@ -398,13 +496,22 @@ c15 AS (
     SELECT b15.constructorid,name
     FROM constructors
     INNER JOIN b15 ON b15.constructorid=constructors.constructorid
+),
+d15 AS (
+    SELECT constructorid,name, COUNT(constructorid) as num
+    FROM c15
+    GROUP BY constructorid,name
+    ORDER BY num DESC
+),
+e15 AS (
+    SELECT max(num)
+    FROM d15
 )
+SELECT constructorid,name,num
+FROM d15,e15
+WHERE num = max
+ORDER BY name,constructorid;
 
-SELECT constructorid,name, COUNT(constructorid) as num
-FROM c15
-GROUP BY constructorid,name
-ORDER BY num DESC
-LIMIT 1;
 
 --16--
 WITH a16 AS (
@@ -431,6 +538,7 @@ WHERE country='USA'
 ORDER BY forename,surname,driverid
 LIMIT 5;
 
+
 --17--
 WITH A17 AS (
     SELECT constructorid,results.raceid,COUNT(results.raceid) as num
@@ -455,7 +563,8 @@ SELECT constructors.constructorid,name,count
 FROM B17,C17,constructors
 WHERE C17.mx = B17.count
 AND constructors.constructorid = B17.constructorid
-ORDER BY name,constructorid
+ORDER BY name,constructorid;
+
 
 --18--
 WITH A18 AS (
@@ -472,7 +581,9 @@ B18 AS (
 SELECT drivers.driverid,forename,surname,B18.max AS num_laps
 FROM A18,B18,drivers
 WHERE A18.count = B18.max
-AND A18.driverid = drivers.driverid; 
+AND A18.driverid = drivers.driverid
+ORDER BY forename, surname, driverid; 
+
 
 --19--
 WITH A19 as (
@@ -488,7 +599,9 @@ B19 AS (
 SELECT A19.driverid,forename,surname,mx as count
 FROM A19,B19,drivers    
 WHERE A19.count = B19.mx
-AND A19.driverid = drivers.driverid;
+AND A19.driverid = drivers.driverid
+ORDER BY forename,surname DESC,driverid;
+
 
 --20--
 WITH A20 AS (
@@ -512,5 +625,6 @@ C20 AS (
 SELECT C20.driverid,forename,surname,num_champs
 FROM drivers,C20
 WHERE C20.driverid = drivers.driverid
-ORDER BY num_champs DESC, forename,surname,driverid
+ORDER BY num_champs DESC, forename,surname DESC,driverid
 LIMIT 5;
+
